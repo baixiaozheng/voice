@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>列表</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}"  media="all">
+</head>
+<body>
+<fieldset class="layui-elem-field site-demo-button">
+    <button type="button"  onclick="toIndex()" class="layui-btn layui-btn-radius">返回首页</button>
+</fieldset>
+<table class="layui-hide" id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <button type="button"  onclick="openProductCount('{{d.taskId}}')" class="layui-btn layui-btn-primary layui-btn-sm" lay-event="detail">查看</button>
+</script>
+<script th:src="@{/layui/layui.js}" ></script>
+<script th:src="@{/layui/jquery.js}"></script>
+<script>
+    layui.use('table', function(){
+        var table = layui.table;
+    //执行一个 table 实例
+    table.render({
+        elem: '#demo'
+       // ,height: 420
+        ,width:'100%'
+        ,url: '/list' //数据接口
+        ,title: '转换列表'
+        ,defaultToolbar: ['filter', 'print', 'exports']
+        ,page: false //开启分页
+        //,toolbar: 'default' //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
+       // ,totalRow: true //开启合计行
+        ,even: true //开启隔行背景
+        ,size: 'lg' //小尺寸的表格
+        ,cols: [
+            [ //表头
+            {type: 'checkbox', fixed: 'left'}
+            ,{field: 'id', title: 'ID', width:80, sort: true, fixed: 'left'}
+            ,{field: 'fileName', title: '文件名', width:250}
+            ,{field: 'taskId', title: '任务ID', width: 300, sort: true}
+            ,{field: 'status', title: '状态', width:120, sort: true}
+            ,{field: 'createTime', title: '创建时间', width: 200, sort: true,templet:'<div>{{ layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss") }}</div>'}
+            ,{fixed: 'right', width: 165, align:'center', toolbar: '#barDemo'}
+            ]
+        ],
+        done: function (res, curr, count) {
+            $("[data-field='status']").children().each(function () {
+                if ($(this).text() == 'WAITING') {
+                    $(this).text("待查询")
+                }
+                if ($(this).text() == 'PROGRESS') {
+                    $(this).text("查询中")
+                }
+                if ($(this).text() == 'COMPLETE') {
+                    $(this).text("已完成")
+                }
+            });
+        }
+    });
+      /*  //监听行工具事件
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+            if(layEvent === 'detail'){
+                layer.msg('查看操作'+data.taskId);
+                layer.open({
+                    type: 2,
+                    title: false,
+                    shade: [0.5],
+                    title: '转换结果',
+                    shadeClose: true,
+                    shade: 0.5,
+                    skin:'demo-class',
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['1000px', '660px'],
+                    shift: 2,
+                    page: false,
+                    //content: '/result?taskId='+data.taskId, //iframe的url
+                    content:$("#resultLayer"),
+                    success: function(layero) {
+                        var colsList = [
+                            [
+                                { field: 'startTime', title: '开始时间' },
+                                { field: 'endTime', title: '结束时间' },
+                                { field: 'result', title: '内容' }
+                            ]
+                        ];
+
+                        table.render({
+                            elem: '#con',
+                            id: 'Message',
+                            url: '/result?taskId='+data.taskId,
+                            cols: colsList,
+                            toolbar: 'default', //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
+                            even: true //开启隔行背景
+                        });
+                    }
+                });
+            }
+        });
+*/
+
+    });
+
+    function toIndex() {
+        location.href="/toIndex";
+    }
+    var table2;
+
+    function openProductCount(taskId) {
+        layui.use(['table', 'form'], function () {
+            table2 = layui.table;
+            layer.open({
+                type: 1,
+                title: '翻译结果',
+                area: ['900px', '650px'], //宽高
+                content: $('#openProductBox'),
+
+                success: function () {
+                    table2.render({
+                        elem: '#openProductTable',
+                        id: 'openProductTable',
+                        height: 480,
+                        method: 'get', //接口http请求类型，默认：get
+                        url: '/result?taskId='+taskId,
+                        toolbar: 'default',
+                        maxmin: true, //开启最大化最小化按钮
+                        // response: {
+                        //     statusName: 'code', //规定数据状态的字段名称，默认：code
+                        //     statusCode: 200, //规定成功的状态码，默认：0
+                        //     msgName: 'msg', //规定状态信息的字段名称，默认：msg
+                        //     countName: 'count', //规定数据总数的字段名称，默认：count
+                        //     dataName: 'resultList', //规定数据列表的字段名称，默认：data
+                        // },
+                        page: false, //是否分页
+                        cols: [
+                            [
+                                //{ field: 'startTime', title: '开始时间',templet:'<div>{{ layui.util.toDateString(d.startTime.replace("T", " "), "HH:mm:ss") }}</div>' },
+                               // { field: 'endTime', title: '结束时间',templet:'<div>{{ layui.util.toDateString(d.endTime.replace("T", " "), "HH:mm:ss") }}</div>'  },
+                                { field: 'startTime', title: '开始时间'},
+                                { field: 'endTime', title: '结束时间'},
+                                { field: 'result', title: '内容' }
+                            ]
+                        ]
+                    });
+                }
+            });
+        });
+    }
+</script>
+
+
+<script type="text/html" id="openProductCount">
+    <a href="javascript:;" class="layui-table-link" style="display: inline-block; width: 100%;" οnclick="openProductCount('{{d.companyId}}')">{{d.openProductCount}}</a>
+</script>
+
+<div id="resultLayer">
+    <table class="layui-hide" id="con" lay-filter="test"></table>
+</div>
+
+<div id="openProductBox" style="display: none; padding: 10px;">
+    <table id="openProductTable" lay-filter="openProductTable"></table>
+</div>
+</body>
